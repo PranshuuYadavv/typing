@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <title>Hindi Typing Practice (WPM)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --muted:#9ca3af; --text:#e5e7eb; --accent:#22d3ee; }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:var(--bg); color:var(--text);}
+    .wrap{min-height:100dvh; display:flex; align-items:center; justify-content:center; padding:24px;}
+    .card{width:100%; max-width:720px; background:var(--card); border:1px solid #1f2937; border-radius:14px; padding:20px 22px; box-shadow:0 10px 30px rgba(0,0,0,.35); text-align:center}
+    h1{margin:12px 0; font-size:22px}
+    p.ref{margin:0 0 16px; color:var(--muted); line-height:1.6}
+    textarea{width:100%; min-height:140px; padding:12px; border-radius:10px; border:1px solid #374151; background:#0b1220; color:var(--text); font-size:16px; outline:none}
+    textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(34,211,238,.2)}
+    .row{display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; justify-content:center}
+    .btn{appearance:none; border:1px solid #334155; background:#0b1220; color:var(--text); padding:10px 14px; border-radius:10px; cursor:pointer; font-weight:600}
+    .btn:hover{border-color:var(--accent)}
+    .stats{display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; justify-content:center}
+    .chip{background:#0b1220; border:1px solid #243041; padding:8px 10px; border-radius:10px; font-size:14px}
+    .accent{color:var(--accent); font-weight:700}
+    .foot{margin-top:12px; font-size:13px; color:#a1a1aa}
+
+    /* Profile Image Style */
+    .profile-img {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--accent);
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+
+      <!-- तुम्हारी फोटो -->
+      <img src="Screenshot 2025-03-16 165416.png" alt="My Photo" class="profile-img">
+
+
+      <h1>Hindi Typing Practice (WPM)</h1>
+      <p class="ref" id="refText">
+        भारत के संविधान की प्रस्तावना न्याय, स्वतंत्रता, समानता और बंधुत्व की बात करती है।
+      </p>
+
+      <textarea id="inputBox" placeholder="यहाँ टाइप करना शुरू करें..."></textarea>
+
+      <div class="row">
+        <button class="btn" id="startBtn">Start</button>
+        <button class="btn" id="resetBtn">Reset</button>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="chip">WPM: <span class="accent" id="wpm">0</span></div>
+        <div class="chip">Elapsed: <span class="accent" id="elapsed">00:00</span></div>
+        <div class="chip">Words typed: <span class="accent" id="wordCount">0</span></div>
+      </div>
+
+      <div class="foot">
+        Tip: <b>Start</b> दबाकर शुरू करो। टाइप करते ही WPM अपने-आप अपडेट होगा। <b>Reset</b> से नया session शुरू करो।
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const inputBox = document.getElementById('inputBox');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const wpmEl = document.getElementById('wpm');
+    const elapsedEl = document.getElementById('elapsed');
+    const wordCountEl = document.getElementById('wordCount');
+
+    let startTime = null;
+    let timerId = null;
+
+    function getWordCount(text){
+      const t = text.trim();
+      if(!t) return 0;
+      return t.split(/\s+/).length;
+    }
+
+    function fmtTime(ms){
+      const totalSec = Math.floor(ms/1000);
+      const m = String(Math.floor(totalSec/60)).padStart(2,'0');
+      const s = String(totalSec%60).padStart(2,'0');
+      return `${m}:${s}`;
+    }
+
+    function updateStats(){
+      if(!startTime) return;
+      const now = Date.now();
+      const elapsedMs = now - startTime;
+      const minutes = elapsedMs / 1000 / 60;
+
+      const words = getWordCount(inputBox.value);
+      const wpm = minutes > 0 ? Math.round(words / minutes) : 0;
+
+      wpmEl.textContent = isFinite(wpm) ? wpm : 0;
+      elapsedEl.textContent = fmtTime(elapsedMs);
+      wordCountEl.textContent = words;
+    }
+
+    function startSession(){
+      if(startTime) return; // already started
+      startTime = Date.now();
+      timerId = setInterval(updateStats, 250);
+      inputBox.focus();
+      startBtn.disabled = true;
+      startBtn.textContent = 'Running...';
+    }
+
+    function resetSession(){
+      clearInterval(timerId);
+      timerId = null;
+      startTime = null;
+      inputBox.value = '';
+      wpmEl.textContent = '0';
+      elapsedEl.textContent = '00:00';
+      wordCountEl.textContent = '0';
+      startBtn.disabled = false;
+      startBtn.textContent = 'Start';
+      inputBox.focus();
+    }
+
+    inputBox.addEventListener('input', ()=>{
+      if(!startTime){
+        startSession();
+      }
+      updateStats();
+    });
+
+    startBtn.addEventListener('click', startSession);
+    resetBtn.addEventListener('click', resetSession);
+  </script>
+</body>
+</html>
